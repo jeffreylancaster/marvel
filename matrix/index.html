@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Marvel Comics: Comic Book Character Co-occurrence</title>
+    <meta charset="UTF-8">
+    <meta name="description" content="Marvel Comics: Comic Book Character Co-occurrence">
+    <meta name="keywords" content="Marvel, X-Men, Wolverine, Iron Man, Captain America, Cyclops, Spider-Man, Storm, Thor, Beast, Avengers, Colossus, Human Torch, Thing, Rogue, Nightcrawler, Hulk, Iceman, Invisible Woman, Archangel, Fantastic Four, Mr. Fantastic, Scarlet Witch, Gambit, Vision, Professor Xavier, Psylocke, Wasp, Hawkeye, Magneto, Quicksilver, Havok, Bishop, Black Panther, Cannonball, Black Widow, Sub-Mariner, She-Hulk, Daredevil, Doctor Strange, Emma Frost, Jean Grey">
+    <meta name="author" content="Jeffrey Lancaster">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/7.0.0/normalize.min.css" />
+    <style>
+      body{
+        font-family: "Helvetica Neue";
+        padding-top: 35px;
+      }
+      header{
+        margin: 15px;
+      }
+      header span{
+        font-weight: 300;
+        font-size: 50px;
+      }
+      #cta{
+        color: #999;
+        font-style: italic;
+        font-size: 0.8em;
+      }
+      #description{
+        width: 100%;
+        max-width: 1000px;
+        margin: 0 15px;
+        color: #999;
+        font-size: 0.8em;
+      }
+      #description a{
+        text-decoration: none;
+      }
+      @import url(https://bost.ocks.org/mike/style.css);
+      /*body{margin-left: 100px;}*/
+      .background {
+        fill: #eee;
+      }
+      line {
+        stroke: #fff;
+      }
+      text{
+        font-size: 0.5em;
+      }
+      text.active {
+        fill: red;
+      }
+      svg{
+        padding-left: 250px;
+      }
+      .cell{
+        fill: #CCC;
+      }
+    </style>
+    <script src="//d3js.org/d3.v2.min.js" charset="utf-8"></script>
+  </head>
+  <body>
+    <header>
+      <h1>
+        <img>
+        <span></span>
+      </h1>
+    </header>
+    <div id="description">
+      <h2>Playing with the Marvel API.</h2>
+
+      <h3>Please be patient while this loads... It might take a minute or two.</h3>
+
+      <p>Looking at (1491<sup>2</sup>-1491)/2 = 1,110,795 comic book character co-occurrences (two characters showing up in the same comic) across the history of Marvel Comics. A subset of this visualization - just the Top 100 characters - can be viewed <a href="../matrix-100/">here</a>.</p>
+
+      <p>Code for this chart is on <a href="https://github.com/jeffreylancaster/marvel" target="_blank">github</a>, and a description of the impetus to this project is on <a href="https://medium.com/@jeffrey.lancaster/the-ultimate-game-of-thrones-dataset-a100c0cf35fb" target="_blank">Medium</a>. This visualization is based on Mike Bostock's <a href="https://bost.ocks.org/mike/miserables/" target="_blank"><i>Les Mis&eacute;rables</i> co-occurrence matrix diagram</a>. <a href="http://marvel.com" target="_blank">Data provided by Marvel © 2018 MARVEL</a> via <a href="https://developer.marvel.com" target="_blank">Marvel Developer</a>.</p>
+
+      <p>Comments and suggestions are welcome on github, Medium, or <a href="mailto: jeffrey@jeffreylancaster.com" target="_blank">here</a>. <i>Note: I've intentionally not shared the cached data pulled from Marvel Developer, only the directed graph data to build this visualization.</i></p>
+      <p>Order: <select id="order">
+        <option value="name">by Name</option>
+        <option value="count" selected>by Frequency</option>
+        <!-- <option value="group">by Cluster</option> -->
+      </select></p>
+    </div>
+    
+    <svg></svg>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+    <script>
+/* HELPFUL FUNCTIONS */
+
+// to convert scene start/end times into seconds
+function sec(timeString){
+  var sec = 0;
+  if (timeString.length == 0) return sec;
+  var splitArray = timeString.split(":");
+  sec = 3600*parseFloat(splitArray[0])+60*parseFloat(splitArray[1])+parseFloat(splitArray[2]);
+  return sec;
+}
+
+// to convert seconds into hh:mm:ss
+function secondsToHMS(d) {
+  var date = new Date(null);
+  date.setSeconds(d); // specify value for SECONDS here
+  return date.toISOString().substr(11, 8);
+}
+
+// to dedpulicate an array
+function onlyUnique(value, index, self) { 
+  return self.indexOf(value) === index;
+}
+
+
+/* IMPORT DATA */
+$.when(
+  $.getJSON("../data/config.json", function(data) {
+    config = data.config;
+    console.log("config.json loaded");
+  })
+  .fail(function() {console.error("config.json not loaded");})
+
+
+/* DO STUFF WITH THE DATA */
+
+).then(function() {
+  console.log("now that the files are loaded... do magic.");
+
+    /* CONFIG SETUP */
+    $("h1 > img").css({"height": config.logo.height, "vertical-align": "middle", "margin-top": config.logo.marginTop}).attr("src", "../img/"+config.logo.src);
+    $("h1 > span").html(" - "+config.matrix.title);
+    /* END CONFIG SETUP */
+
+    var file, width, height;
+    
+    width = config.matrix.all.size;
+    height = config.matrix.all.size;
+    file = config.matrix.all.file;
+
+    var x = d3.scale.ordinal().rangeBands([0, width]),
+      z = d3.scale.linear().domain([0, 100]).clamp(true),
+      c = d3.scale.category20c().domain(d3.range(20));
+
+    var svg = d3.select("svg")
+        .attr("width", width + config.matrix.margin.left + config.matrix.margin.right)
+        .attr("height", height + config.matrix.margin.top + config.matrix.margin.bottom)
+        .style("margin-left", -config.matrix.margin.left + "px")
+      .append("g")
+        .attr("transform", "translate(" + config.matrix.margin.left + "," + config.matrix.margin.top + ")");
+
+    d3.json("../data/"+file, function(dataMatrix) {
+      var matrix = [],
+        nodes = dataMatrix.comicsMatrix.nodes,
+        n = nodes.length;
+
+    // Compute index per node.
+    nodes.forEach(function(node, i) {
+      node.index = i;
+      matrix[i] = d3.range(n).map(function(j) {
+        if(i == j){
+          return {x: j, y: i, z: node.count
+          };
+        } else {
+          return {x: j, y: i, z: 0};
+        }
+      });
+    });
+
+    // Convert links to matrix; count character occurrences.
+    dataMatrix.comicsMatrix.links.forEach(function(link) {
+      matrix[link.source][link.target].z += link.value;
+      matrix[link.target][link.source].z += link.value;
+      // matrix[link.source][link.source].z += link.value;
+      // matrix[link.target][link.target].z += link.value;
+      // nodes[link.source].count += link.value;
+      // nodes[link.target].count += link.value;
+    });
+
+    // Precompute the orders.
+    var orders = {
+      name: d3.range(n).sort(function(a, b) { return d3.ascending(nodes[a].name, nodes[b].name); }),
+      count: d3.range(n).sort(function(a, b) { return nodes[b].count - nodes[a].count; })
+    };
+
+    // The default sort order.
+    x.domain(orders.count);
+
+    svg.append("rect")
+        .attr("class", "background")
+        .attr("width", width)
+        .attr("height", height);
+
+    var row = svg.selectAll(".row")
+        .data(matrix)
+      .enter().append("g")
+        .attr("class", "row")
+        .attr("transform", function(d, i) { return "translate(0," + x(i) + ")"; })
+        .each(row);
+
+    row.append("line")
+        .attr("x2", width);
+
+    row.append("text")
+        .attr("x", -6)
+        .attr("y", x.rangeBand() / 2)
+        .attr("dy", ".32em")
+        .attr("text-anchor", "end")
+        .text(function(d, i) { return nodes[i].name; });
+
+    var column = svg.selectAll(".column")
+      .data(matrix)
+      .enter().append("g")
+        .attr("class", "column")
+        .attr("transform", function(d, i) { return "translate(" + x(i) + ")rotate(-90)"; });
+
+    column.append("line")
+        .attr("x1", -width);
+
+    column.append("text")
+        .attr("x", 6)
+        .attr("y", x.rangeBand() / 2)
+        .attr("dy", ".32em")
+        .attr("text-anchor", "start")
+        .text(function(d, i) { return nodes[i].name; });
+
+    function row(row) {
+      var cell = d3.select(this).selectAll(".cell")
+          .data(row.filter(function(d) { return d.z; }))
+        .enter().append("g")
+        .append("rect")
+          .attr("class", "cell")
+          .attr("x", function(d) { return x(d.x); })
+          .attr("width", x.rangeBand())
+          .attr("height", x.rangeBand())
+          .style("fill-opacity", function(d) { return z(d.z); })
+          .style("fill", function(d) { return nodes[d.x].group == nodes[d.y].group ? c(nodes[d.x].group) : null; })
+          .on("mouseover", mouseover)
+          .on("mouseout", mouseout)
+        .append("title")
+          .text(function(d, i) {
+            if(d.x == d.y){
+              return nodes[d.x].name + " in " + d.z + " comics with other characters."
+            } else {
+              return nodes[d.x].name + " and " + nodes[d.y].name + " together in " + d.z + " comics.";
+            }
+          });
+    }
+
+    function mouseover(p) {
+      d3.selectAll(".row text").classed("active", function(d, i) { return i == p.y; });
+      d3.selectAll(".column text").classed("active", function(d, i) { return i == p.x; });
+    }
+
+    function mouseout() {
+      d3.selectAll("text").classed("active", false);
+    }
+
+    d3.select("#order").on("change", function() {
+      //clearTimeout(timeout);
+      order(this.value);
+    });
+
+    function order(value) {
+      x.domain(orders[value]);
+
+      var t = svg.transition().duration(2500);
+
+      t.selectAll(".row")
+        .delay(function(d, i) { return x(i) * 4; })
+        .attr("transform", function(d, i) { return "translate(0," + x(i) + ")"; })
+      .selectAll(".cell")
+        .delay(function(d) { return x(d.x) * 4; })
+        .attr("x", function(d) { return x(d.x); });
+
+      t.selectAll(".column")
+        .delay(function(d, i) { return x(i) * 4; })
+        .attr("transform", function(d, i) { return "translate(" + x(i) + ")rotate(-90)"; });
+    }
+
+    // var timeout = setTimeout(function() {
+    //   order("count");
+    //   d3.select("#order").property("selectedIndex", 1).node().focus();
+    //   }, 5000);
+    });
+
+});
+
+    </script>
+  </body>
+</html>

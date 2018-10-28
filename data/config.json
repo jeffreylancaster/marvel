@@ -1,0 +1,49 @@
+{
+	"config": {
+		"countUp": false,
+  		"barHeight": 20,
+  		"logo":{
+  			"src": "marvel-logo-2.png",
+  			"height": "120px",
+  			"marginTop": "-50px"
+  		},
+		"matrix": {
+			"title":"Comic Character Co-Occurrence",
+			"all": {
+				"size": 10000,
+				"file": "matrixObject.json"
+			},
+			"margin": {
+				"top": 200,
+				"right": 10,
+				"bottom": 60,
+				"left": 350
+			}
+		},
+		"matrix100": {
+			"title":"Top 100 Comic Character Co-Occurrence",
+			"all": {
+				"size": 1000,
+				"file": "matrixObject-100.json"
+			},
+			"margin": {
+				"top": 200,
+				"right": 50,
+				"bottom": 60,
+				"left": 350
+			}
+		},
+		"matrixUniverses": {
+			"title":"Film Universes Co-Occurrence",
+			"all": {
+				"size": 3000
+			},
+			"margin": {
+				"top": 200,
+				"right": 50,
+				"bottom": 60,
+				"left": 350
+			}
+		}
+	}
+}

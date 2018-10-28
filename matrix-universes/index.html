@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Marvel Comics: Film Universes Co-occurrence</title>
+    <meta charset="UTF-8">
+    <meta name="description" content="Marvel Comics: Film Universes Co-occurrence">
+    <meta name="keywords" content="Marvel, Avengers, X-Men, The Defenders, Stan Lee, Professor Xavier, Captain America, Iron Man, Wolverine, Claire Temple, Nick Fury, Magneto, Cyclops, Thor, Black Widow, Beast, Phoenix, Storm, Pepper Potts, Mystique, War Machine, Falcon, Heimdall, Howard Stark, Hulk">
+    <meta name="author" content="Jeffrey Lancaster">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/7.0.0/normalize.min.css" />
+    <style>
+      body{
+        font-family: "Helvetica Neue";
+        padding-top: 35px;
+      }
+      header{
+        margin: 15px;
+      }
+      header span{
+        font-weight: 300;
+        font-size: 50px;
+      }
+      #cta{
+        color: #999;
+        font-style: italic;
+        font-size: 0.8em;
+      }
+      #description{
+        width: 100%;
+        max-width: 1000px;
+        margin: 0 15px;
+        color: #999;
+        font-size: 0.8em;
+      }
+      #description a{
+        text-decoration: none;
+      }
+      @import url(https://bost.ocks.org/mike/style.css);
+      /*body{margin-left: 100px;}*/
+      .background {
+        fill: #eee;
+      }
+      line {
+        stroke: #fff;
+      }
+      text{
+        font-size: 0.6em;
+      }
+      text.active {
+        fill: red;
+      }
+      svg{
+        padding-left: 250px;
+      }
+      .cell{
+        fill: #CCC;
+      }
+    </style>
+    <script src="//d3js.org/d3.v2.min.js" charset="utf-8"></script>
+  </head>
+  <body>
+    <header>
+      <h1>
+        <img>
+        <span></span>
+      </h1>
+    </header>
+    <div id="description">
+      <h2>A visualization to show that Deadpool isn't in the Marvel Cinematic Universe.</h2>
+
+      <p>Film character co-occurrences (two characters showing up in the same film) are clustered by their main series to distinguish the Marvel Cinematic Universe (Avengers, et al - upper left macro-cluster), the Earth-10005 Universe (X-Men - middle macro-cluster), and the Marvel TV Series on Netflix (The Defenders - bottom right macro-cluster). Tying them all together: Stan Lee is the only overlap between the MCU and Earth-10005!
+
+      <p>Code for this chart is on <a href="https://github.com/jeffreylancaster/marvel" target="_blank">github</a>, and a description of the impetus to this project is on <a href="https://medium.com/@jeffrey.lancaster/the-ultimate-game-of-thrones-dataset-a100c0cf35fb" target="_blank">Medium</a>. This visualization is based on Mike Bostock's <a href="https://bost.ocks.org/mike/miserables/" target="_blank"><i>Les Mis&eacute;rables</i> co-occurrence matrix diagram</a>. Marvel MCU and Neflix data from <a href="https://blog.bramp.net/post/2018/04/08/the-mcu/" target="_blank">blog.bramp.net</a> and additional data based on <a href="http://marvel.wikia.com/wiki/Earth-10005" target="_blank">marvel.wikia.com</a>.</p>
+
+      <p>Comments and suggestions are welcome on github, Medium, or <a href="mailto: jeffrey@jeffreylancaster.com" target="_blank">here</a>.</p>
+
+      <p>Order: <select id="order">
+        <option value="name">by Name</option>
+        <option value="count">by Frequency</option>
+        <option value="group">by Cluster</option>
+      </select></p>
+    </div>
+    
+    <svg></svg>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+    <script>
+/* HELPFUL FUNCTIONS */
+
+// to convert scene start/end times into seconds
+function sec(timeString){
+  var sec = 0;
+  if (timeString.length == 0) return sec;
+  var splitArray = timeString.split(":");
+  sec = 3600*parseFloat(splitArray[0])+60*parseFloat(splitArray[1])+parseFloat(splitArray[2]);
+  return sec;
+}
+
+// to convert seconds into hh:mm:ss
+function secondsToHMS(d) {
+  var date = new Date(null);
+  date.setSeconds(d); // specify value for SECONDS here
+  return date.toISOString().substr(11, 8);
+}
+
+// to dedpulicate an array
+function onlyUnique(value, index, self) { 
+  return self.indexOf(value) === index;
+}
+
+// to sort the array of objects
+function compare(a,b) {
+  if (a.name < b.name)
+    return -1;
+  if (a.name > b.name)
+    return 1;
+  return 0;
+}
+
+var mcuFilm, mcuTV, xmenFilm;
+var matrixObject = { // object for nodes & links
+  "nodes": [],
+  "links": []
+}
+var characterMatrix = [[]];
+var uniqueCharacters = {};
+var groupArray = [
+  "Ant-Man",
+  "Iron Man",
+  "Thor",
+  "Spider-Man",
+  "Black Panther",
+  "Doctor Strange",
+  "Guardians of the Galaxy",
+  "Hulk",
+  "Captain America",
+  "Avengers",
+  "Stan Lee",
+  "Deadpool",
+  "X-Men",
+  "Wolverine",
+  "Iron Fist",
+  "Jessica Jones",
+  "Luke Cage",
+  "Daredevil",
+  "The Punisher"
+];
+
+/* IMPORT DATA */
+$.when(
+
+  $.getJSON("../data/mcu-film.json", function(data) {
+    mcuFilm = data.films;
+  }),
+  $.getJSON("../data/mcu-netflix.json", function(data) {
+    mcuTV = data.films;
+  }),
+  $.getJSON("../data/x-men-film.json", function(data) {
+    xmenFilm = data.films;
+  }),
+  $.getJSON("../data/config.json", function(data) {
+    config = data.config;
+    console.log("config.json loaded");
+  })
+  .fail(function() {console.error("config.json not loaded");})
+
+
+/* DO STUFF WITH THE DATA */
+
+).then(function() {
+  console.log("now that the files are loaded... do magic.");
+
+    /* DIGEST FILES TO MAKE CHARACTER MATRIX */
+    var films = [...mcuFilm, ...mcuTV, ...xmenFilm];
+    
+    // make uniqueCharacters, make groupArray
+    films.forEach(function(val, i){
+      val.characters.forEach(function(value, j){
+        if(!uniqueCharacters[value]){
+          uniqueCharacters[value.name] = value;
+        }
+        //groupArray.push(value.mainseries);
+      });
+    });
+
+
+    // deduplicate the groupArray
+    //groupArray = groupArray.filter(onlyUnique).sort();
+    //console.log(groupArray);
+
+    var uniqueCharactersArray = [];
+    for(var i in uniqueCharacters){
+      // assign a group to each character...
+      uniqueCharacters[i].group = groupArray.indexOf(uniqueCharacters[i].mainseries);
+      // ... and make uniqueCharacters into an array
+      uniqueCharactersArray.push(uniqueCharacters[i].name);
+    };
+    uniqueCharactersArray.sort();
+
+    // count the number of films & series for each character
+    for(var i in films){
+      if(films[i].characters.length > 1){
+        films[i].characters.forEach(function(item, j){
+          if(!uniqueCharacters[item.name].films){
+            uniqueCharacters[item.name].films = {}
+          }
+          if(!uniqueCharacters[item.name].series){
+            uniqueCharacters[item.name].series = {}
+          }
+          uniqueCharacters[item.name].films[films[i].name] = true;
+          uniqueCharacters[item.name].series[films[i].series] = true;
+        });
+      }
+    }
+    for(var i in uniqueCharacters){
+      if(uniqueCharacters[i].films){
+        uniqueCharacters[i].films = Object.keys(uniqueCharacters[i].films).length;
+      }
+      if(uniqueCharacters[i].series){
+        uniqueCharacters[i].series = Object.keys(uniqueCharacters[i].series).length;
+      }
+    }    
+
+    // create the co-occurrence matrix for all characters
+    for(i=0; i<uniqueCharactersArray.length; i++){
+      characterMatrix[i] = [];
+      for(j=0; j<uniqueCharactersArray.length; j++){
+        characterMatrix[i][j] = 0;
+      }
+    }
+
+    for(var i in films){
+      if(films[i].characters.length > 1){
+        films[i].characters.forEach(function(item, j){
+          films[i].characters.forEach(function(val, k){
+            if(uniqueCharactersArray.includes(item.name) && uniqueCharactersArray.includes(val.name)){
+              characterMatrix[uniqueCharactersArray.indexOf(item.name)][uniqueCharactersArray.indexOf(val.name)]++;
+            }
+          });
+        });
+      }
+    }
+
+    //console.log(characterMatrix);
+
+    for(i=0; i < characterMatrix.length; i++){
+      for(j=0; j < i; j++){
+        if(characterMatrix[i][j] != 0){
+          matrixObject.links.push({"source": i, "target": j, "value": characterMatrix[i][j]});
+        }
+      }
+    }
+
+    for(i=0; i<uniqueCharactersArray.length; i++){
+      matrixObject.nodes[i] = {
+        "name": uniqueCharactersArray[i],
+        "group": uniqueCharacters[uniqueCharactersArray[i]].group,
+        "count": uniqueCharacters[uniqueCharactersArray[i]].films
+      };
+    }
+    
+    console.log(matrixObject);
+
+}).then(function(){
+
+    /* CONFIG SETUP */
+    $("h1 > img").css({"height": config.logo.height, "vertical-align": "middle", "margin-top": config.logo.marginTop}).attr("src", "../img/"+config.logo.src);
+    $("h1 > span").html(" - "+config.matrixUniverses.title);
+    /* END CONFIG SETUP */
+
+    var file, width, height;
+    
+    width = config.matrixUniverses.all.size;
+    height = config.matrixUniverses.all.size;
+    file = config.matrixUniverses.all.file;
+
+    var x = d3.scale.ordinal().rangeBands([0, width]),
+      z = d3.scale.linear().domain([0, 20]).clamp(true),
+      //c = d3.scale.category20().domain(d3.range(20));
+      c = d3.scale.category10().domain(d3.range(10));
+    var svg = d3.select("svg")
+        .attr("width", width + config.matrixUniverses.margin.left + config.matrixUniverses.margin.right)
+        .attr("height", height + config.matrixUniverses.margin.top + config.matrixUniverses.margin.bottom)
+        .style("margin-left", -config.matrixUniverses.margin.left + "px")
+      .append("g")
+        .attr("transform", "translate(" + config.matrixUniverses.margin.left + "," + config.matrixUniverses.margin.top + ")");
+
+    //d3.json("../data/"+file, function(dataMatrix) {
+    var matrix = [],
+      nodes = matrixObject.nodes,
+      n = nodes.length;
+
+    // Compute index per node.
+    nodes.forEach(function(node, i) {
+      node.index = i;
+      //node.count = 0;
+      matrix[i] = d3.range(n).map(function(j) { return {x: j, y: i, z: 0}; });
+    });
+
+    // Convert links to matrix; count character occurrences.
+
+    // matrixObject.links.forEach(function(link) {
+    //   matrix[link.source][link.target].z += link.value;
+    //   matrix[link.target][link.source].z += link.value;
+    //   matrix[link.source][link.source].z += link.value;
+    //   matrix[link.target][link.target].z += link.value;
+    //   nodes[link.source].count += link.value;
+    //   nodes[link.target].count += link.value;
+    // });
+    // console.log(matrix);
+    
+    characterMatrix.forEach(function(val, i){
+      characterMatrix[i].forEach(function(item, j){
+        matrix[i][j].z = characterMatrix[i][j];
+      })
+    })
+
+    // Precompute the orders.
+    var orders = {
+      name: d3.range(n).sort(function(a, b) { return d3.ascending(nodes[a].name, nodes[b].name); }),
+      count: d3.range(n).sort(function(a, b) { return nodes[b].count - nodes[a].count; }),
+      group: d3.range(n).sort(function(a, b) { return nodes[a].group - nodes[b].group; })
+    };
+
+    // The default sort order.
+    x.domain(orders.name);
+
+    svg.append("rect")
+        .attr("class", "background")
+        .attr("width", width)
+        .attr("height", height);
+
+    var row = svg.selectAll(".row")
+        .data(matrix)
+      .enter().append("g")
+        .attr("class", "row")
+        .attr("transform", function(d, i) { return "translate(0," + x(i) + ")"; })
+        .each(row);
+
+    row.append("line")
+        .attr("x2", width);
+
+    row.append("text")
+        .attr("x", -6)
+        .attr("y", x.rangeBand() / 2)
+        .attr("dy", ".32em")
+        .attr("text-anchor", "end")
+        .text(function(d, i) { return nodes[i].name; });
+
+    var column = svg.selectAll(".column")
+      .data(matrix)
+      .enter().append("g")
+        .attr("class", "column")
+        .attr("transform", function(d, i) { return "translate(" + x(i) + ")rotate(-90)"; });
+
+    column.append("line")
+        .attr("x1", -width);
+
+    column.append("text")
+        .attr("x", 6)
+        .attr("y", x.rangeBand() / 2)
+        .attr("dy", ".32em")
+        .attr("text-anchor", "start")
+        .text(function(d, i) { return nodes[i].name; });
+
+    function row(row) {
+      var cell = d3.select(this).selectAll(".cell")
+          .data(row.filter(function(d) { return d.z; }))
+        .enter().append("g")
+        .append("rect")
+          .attr("class", "cell")
+          .attr("x", function(d) { return x(d.x); })
+          .attr("width", x.rangeBand())
+          .attr("height", x.rangeBand())
+          .style("fill-opacity", function(d) { return z(d.z)/0.24; })
+          .style("fill", function(d) { return nodes[d.x].group == nodes[d.y].group ? c(nodes[d.x].group) : "#666666"; })
+          .on("mouseover", mouseover)
+          .on("mouseout", mouseout)
+        .append("title")
+          .text(function(d, i) {
+            if(d.x == d.y){
+              return nodes[d.x].name + " in " + d.z + " movies/shows with other characters."
+            } else {
+              return nodes[d.x].name + " and " + nodes[d.y].name + " together in " + d.z + " movies/shows.";
+            }
+          });
+    }
+
+    function mouseover(p) {
+      d3.selectAll(".row text").classed("active", function(d, i) { return i == p.y; });
+      d3.selectAll(".column text").classed("active", function(d, i) { return i == p.x; });
+    }
+
+    function mouseout() {
+      d3.selectAll("text").classed("active", false);
+    }
+
+    d3.select("#order").on("change", function() {
+      clearTimeout(timeout);
+      order(this.value);
+    });
+
+    function order(value) {
+      x.domain(orders[value]);
+
+      var t = svg.transition().duration(2500);
+
+      t.selectAll(".row")
+        .delay(function(d, i) { return x(i) * 4; })
+        .attr("transform", function(d, i) { return "translate(0," + x(i) + ")"; })
+      .selectAll(".cell")
+        .delay(function(d) { return x(d.x) * 4; })
+        .attr("x", function(d) { return x(d.x); });
+
+      t.selectAll(".column")
+        .delay(function(d, i) { return x(i) * 4; })
+        .attr("transform", function(d, i) { return "translate(" + x(i) + ")rotate(-90)"; });
+    }
+
+    var timeout = setTimeout(function() {
+      order("group");
+      d3.select("#order").property("selectedIndex", 2).node().focus();
+      }, 5000);
+    });
+
+//});
+
+    </script>
+  </body>
+</html>
