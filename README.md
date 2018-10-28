@@ -6,4 +6,4 @@ Generally a playground of works in progress, but sharing regardless.
 
 ## Notes
 
-I've not shared the script used to pull data from Marvel's API - I'll leave that to you to do on your own. That said, to build these visualizations I did have to cache an extensive amount of data from Marvel Developer. That data will be updated regularly according to the Marvel Developer terms of use.
+_I've not shared the script used to pull data from Marvel's API - I'll leave that to you to do on your own. That said, to build these visualizations I did have to cache an extensive amount of data from Marvel Developer. That data will be updated regularly according to the Marvel Developer terms of use._
