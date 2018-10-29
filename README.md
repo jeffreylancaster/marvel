@@ -18,7 +18,7 @@ Generally a playground of works in progress, but sharing regardless.
 
   [View](https://jeffreylancaster.github.io/marvel/matrix-100/) | [<>](https://github.com/jeffreylancaster/marvel/blob/master/matrix-100/index.html)
 
-### Matrix
+### Comic Character Co-Occurrence
 
   A visualization of all Marvel comic book character co-occurrences (two characters showing up in the same comic) across the history of Marvel Comics
 
