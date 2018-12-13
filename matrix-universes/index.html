@@ -9,64 +9,11 @@
     <meta name="author" content="Jeffrey Lancaster">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/7.0.0/normalize.min.css" />
-    <style>
-      body{
-        font-family: "Helvetica Neue";
-        padding-top: 35px;
-      }
-      header{
-        margin: 15px;
-      }
-      header span{
-        font-weight: 300;
-        font-size: 50px;
-      }
-      #cta{
-        color: #999;
-        font-style: italic;
-        font-size: 0.8em;
-      }
-      #description{
-        width: 100%;
-        max-width: 1000px;
-        margin: 0 15px;
-        color: #999;
-        font-size: 0.8em;
-      }
-      #description a{
-        text-decoration: none;
-      }
-      @import url(https://bost.ocks.org/mike/style.css);
-      /*body{margin-left: 100px;}*/
-      .background {
-        fill: #eee;
-      }
-      line {
-        stroke: #fff;
-      }
-      text{
-        font-size: 0.6em;
-      }
-      text.active {
-        fill: red;
-      }
-      svg{
-        padding-left: 250px;
-      }
-      .cell{
-        fill: #CCC;
-      }
-    </style>
+    <link rel="stylesheet" href="../style.css" />
     <script src="//d3js.org/d3.v2.min.js" charset="utf-8"></script>
   </head>
   <body>
-    <header>
-      <h1>
-        <img>
-        <span></span>
-      </h1>
-    </header>
-    <div id="description">
+    <!--
       <h2>A visualization to show that Deadpool isn't in the Marvel Cinematic Universe.</h2>
 
       <p>Film character co-occurrences (two characters showing up in the same film) are clustered by their main series to distinguish the Marvel Cinematic Universe (Avengers, et al - upper left macro-cluster), the Earth-10005 Universe (X-Men - middle macro-cluster), and the Marvel TV Series on Netflix (The Defenders - bottom right macro-cluster). Tying them all together: Stan Lee is the only overlap between the MCU and Earth-10005!
@@ -74,15 +21,15 @@
       <p>Code for this chart is on <a href="https://github.com/jeffreylancaster/marvel" target="_blank">github</a>, and a description of the impetus to this project is on <a href="https://medium.com/@jeffrey.lancaster/the-ultimate-game-of-thrones-dataset-a100c0cf35fb" target="_blank">Medium</a>. This visualization is based on Mike Bostock's <a href="https://bost.ocks.org/mike/miserables/" target="_blank"><i>Les Mis&eacute;rables</i> co-occurrence matrix diagram</a>. Marvel MCU and Neflix data from <a href="https://blog.bramp.net/post/2018/04/08/the-mcu/" target="_blank">blog.bramp.net</a> and additional data based on <a href="http://marvel.wikia.com/wiki/Earth-10005" target="_blank">marvel.wikia.com</a>.</p>
 
       <p>Comments and suggestions are welcome on github, Medium, or <a href="mailto: jeffrey@jeffreylancaster.com" target="_blank">here</a>.</p>
+    -->
 
-      <p>Order: <select id="order">
-        <option value="name">by Name</option>
-        <option value="count">by Frequency</option>
-        <option value="group">by Cluster</option>
-      </select></p>
-    </div>
+    <p>Order: <select id="order">
+      <option value="name">by Name</option>
+      <option value="count">by Frequency</option>
+      <option value="group">by Cluster</option>
+    </select></p>
     
-    <svg></svg>
+    <svg class="matrix"></svg>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
     <script>

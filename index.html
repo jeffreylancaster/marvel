@@ -1,228 +1,74 @@
+<!DOCTYPE html>
 <html>
-<head>
-  <title>jeffreylancaster.github.io: Marvel</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/7.0.0/normalize.min.css" />
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="icon" href="http://www.jeffreylancaster.com/jeffreylancaster.png"/>
+  <head>
+    <meta charset="utf-8">
+    <meta name="description" content="Marvel Comics">
+    <meta name="keywords" content="Marvel, X-Men, Wolverine, Iron Man, Captain America, Cyclops, Spider-Man, Storm, Thor, Beast, Avengers, Colossus, Human Torch, Thing, Rogue, Nightcrawler, Hulk, Iceman, Invisible Woman, Archangel, Fantastic Four, Mr. Fantastic, Scarlet Witch, Gambit, Vision, Professor Xavier, Psylocke, Wasp, Hawkeye, Magneto, Quicksilver, Havok, Bishop, Black Panther, Cannonball, Black Widow, Sub-Mariner, She-Hulk, Daredevil, Doctor Strange, Emma Frost, Jean Grey">
+    <meta name="author" content="Jeffrey Lancaster">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/7.0.0/normalize.min.css" />
+    <meta property="og:title" content="Marvel Comics">
+    <meta property="og:description" content="Marvel Comics, data visualization">
+    <title>Marvel</title>
+    <link href="style.css" rel="stylesheet">
+  </head>
+  <body>
+    <p class="breadcrumbs">
+      <a href="https://jeffreylancaster.github.io/">jeffreylancaster.github.io</a> → Marvel
+    </p>
 
-  <!-- h/t https://codepen.io/mcraiganthony/pen/NxGxqm -->
-  <!-- <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet"> -->
-  <style>
-/*@gray-darker:               #444444;
-@gray-dark:                 #696969;
-@gray:                      #999999;
-@gray-light:                #cccccc;
-@gray-lighter:              #ececec;
-@gray-lightest:             lighten(@gray-lighter,4%);*/
+    <img src="img/marvel-logo-2.png" class="logo">
 
-*,
-*::before,
-*::after { 
-  box-sizing: border-box;
-}
-
-html {
-  background-color: #f0f0f0;
-}
-
-body {
-  color: #999999;
-  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-  font-style: normal;
-  font-weight: 400;
-  letter-spacing: 0;
-  padding: 1rem;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  -moz-font-feature-settings: "liga" on;
-}
-
-header{
-  margin: 15px;
-}
-header img {
-  max-height: 120px;
-  margin: 0 auto;
-  display: block;
-}
-header span{
-  font-weight: 300;
-  font-size: 50px;
-}
-
-img {
-  height: auto;
-  max-width: 100%;
-  vertical-align: middle;
-}
-
-.btn {
-  background-color: white;
-  border: 1px solid #cccccc;
-  color: #696969;
-  padding: 0.5rem;
-  text-transform: lowercase;
-}
-
-.btn-block {
-  display: block;
-  width: 100%;
-}
- 
-.cards {
-  display: flex;
-  flex-wrap: wrap;
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-
-.cards-item {
-  display: flex;
-  padding: 1rem;
-}
-
-@media(min-width: 40rem) {
-  .cards-item{width: 50%};
-}
-@media(min-width: 56rem) {
-  .cards-item{width: 33.3333%};
-}
-
-.card {
-  background-color: white;
-  /*border-radius: 0.25rem;*/
-  box-shadow: 0 20px 40px -14px rgba(0,0,0,0.25);
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
-.card:hover .card-image{
-  -webkit-filter: contrast(100%);
-  filter: contrast(100%);
-}
-
-.card-content {
-  display: flex;
-  flex: 1 1 auto;
-  flex-direction: column;
-  padding: 1rem;
-}
-
-.card-image {
-  background-position: center center;
-  background-repeat: no-repeat;
-  background-size: cover;
-  /*border-top-left-radius: 0.25rem;
-  border-top-right-radius: 0.25rem;*/
-  -webkit-filter: contrast(70%);
-  filter: contrast(70%);
-  overflow: hidden;
-  position: relative;
-  -webkit-transition: filter 0.5s cubic-bezier(.43,.41,.22,.91);
-  transition: filter 0.5s cubic-bezier(.43,.41,.22,.91);
-}
-
-.card-image::before {
-  content: "";
-  display: block;
-  padding-top: 56.25%; /* 16:9 aspect ratio */
-}
-
-@media(min-width: 40rem) {
-  .card-image::before {
-    padding-top: 66.6%; /* 3:2 aspect ratio */
-  }
-}
-
-.card-image-matrix-3 {
-  background-image: url("/img/vis-thumbnails/matrix-3.png");
-}
-
-.card-image-matrix-4 {
-  background-image: url("/img/vis-thumbnails/matrix-4.png");
-}
-
-.card-title {
-  color: #696969;
-  font-size: 1.25rem;
-  font-weight: 300;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-}
-
-a {
-  text-decoration: none;
-}
-
-.card-text {
-  flex: 1 1 auto;
-  font-size: 0.875rem;
-  line-height: 1.5;
-  margin-bottom: 1.25rem;
-}
-
-.container {
-  max-width: 1000px;
-  margin: 0 auto;
-  border: 0;
-}
-
-  </style>
-</head>
-<body>
-
-<div class="container">
-
-<header>
-  <h1>
-    <img src="/marvel/img/marvel-logo-2.png">
-  </h1>
-</header>
-
-<ul class="cards">
-  <li class="cards-item">
-    <div class="card">
-      <a href="/marvel/matrix-universes/">
-        <div class="card-image card-image-matrix-3"></div>
-        <div class="card-content">
-          <div class="card-title">Film Universes Co-Occurrence</div>
-        </a>
-        <p class="card-text">A visualization to show that Deadpool isn't in the Marvel Cinematic Universe, or Marvel film character co-occurrences (two characters showing up in the same film) clustered by their main series to distinguish the Marvel Cinematic Universe (Avengers), the Earth-10005 Universe (X-Men), and the Marvel TV Series on Netflix (The Defenders).</p>
-        <!-- <button class="btn btn-block card-btn">Button</button> -->
-      </div>
+    <div class="mobile">
+      <a href="https://jeffreylancaster.github.io/marvel/m/">On a mobile device? Click here.</a>
     </div>
-  </li>
-  <li class="cards-item">
-    <div class="card">
-      <a href="/marvel/matrix-100/">
-        <div class="card-image card-image-matrix-4"></div>
-        <div class="card-content">
-          <div class="card-title">Top 100 Comic Character Co-Occurrences</div>
-        </a>
-        <p class="card-text">A visualization of the top 100 (by comic appearance) Marvel comic book character co-occurrences (two characters showing up in the same comic) across the history of Marvel Comics.</p>
-        <!-- <button class="btn btn-block card-btn">Button</button> -->
-      </div>
-    </div>
-  </li>
-  <li class="cards-item">
-    <div class="card">
-      <a href="/marvel/matrix/">
-        <div class="card-image card-image-matrix-4"></div>
-        <div class="card-content">
-          <div class="card-title">Comic Character Co-Occurrences</div>
-        </a>
-        <p class="card-text">A visualization of all Marvel comic book character co-occurrences (two characters showing up in the same comic) across the history of Marvel Comics.</p>
-        <!-- <button class="btn btn-block card-btn">Button</button> -->
-      </div>
-    </div>
-  </li>
-</ul>
 
-</div>
+    <div class="desktop">
 
-</body>
+      <div class="wrapper">
+        <p>This work using Marvel's Developer API began after similar work on HBO's <a href="https://jeffreylancaster.github.io/game-of-thrones/"><i>Game of Thrones</i></a>, Netflix's <a href="https://jeffreylancaster.github.io/stranger-things/"><i>Stranger Things</i></a>, and Amazon's <a href="https://jeffreylancaster.github.io/man-in-the-high-castle/"><i>The Man in the High Castle</i></a>. I was curious whether I could use Marvel's API to prove that Deadpool isn't part of the Marvel Cinematic Universe.</p>
+        <p>This is a playground for that idea and others. Note: the page may take a moment to load since it's loading each visualization.</p>
+      </div>
+
+      <h2>Is Deadpool part of the MCU?</h2>
+      <div class="wrapper">
+        <p>No. No he is not.</p>
+
+        <p>This matrix shows film character co-occurrences (two characters showing up in the same film) clustered by their main series to distinguish the Marvel Cinematic Universe (Avengers, et al - upper left macro-cluster), the Earth-10005 Universe (X-Men - middle macro-cluster), and the Marvel TV Series on Netflix (The Defenders - bottom right macro-cluster). Tying them all together: Stan Lee is the only overlap between the MCU and Earth-10005!</p>
+
+        <p>Marvel MCU and Neflix data from <a href="https://blog.bramp.net/post/2018/04/08/the-mcu/" target="_blank">blog.bramp.net</a> and additional data based on <a href="http://marvel.wikia.com/wiki/Earth-10005" target="_blank">marvel.wikia.com</a>.</p>
+      </div>
+      <iframe src="https://jeffreylancaster.github.io/marvel/matrix-universes/"></iframe>
+      <p class="caption">
+        Scroll down and right and hover. Based on Mike Bostock's <a href="https://bost.ocks.org/mike/miserables/" target="_blank"><i>Les Mis&eacute;rables</i> co-occurrence matrix diagram</a>. <a href="https://jeffreylancaster.github.io/marvel/matrix-universes/" target="_blank">View in a new tab.</a>
+      </p>
+
+      <h2>Which top characters are in comics together?</h2>
+      <div class="wrapper">
+        <p>This matrix looks at comic book character co-occurrences (two characters showing up in the same comic) across the history of Marvel Comics. This visualization is just the Top 100 characters based on overall appearances.</p>
+      </div>
+      <iframe src="https://jeffreylancaster.github.io/marvel/matrix-100/"></iframe>
+      <p class="caption">
+        Scroll down right and hover. Based on Mike Bostock's <a href="https://bost.ocks.org/mike/miserables/" target="_blank"><i>Les Mis&eacute;rables</i> co-occurrence matrix diagram</a>. <a href="https://jeffreylancaster.github.io/marvel/matrix-100/" target="_blank">View in a new tab.</a>
+      </p>
+
+      <h2>Of all characters, which are in comics together?</h2>
+      <div class="wrapper">
+        <p>Please be patient while this loads... It might take a minute or two.</p>
+        <p>Looking at (1491<sup>2</sup>-1491)/2 = 1,110,795 comic book character co-occurrences (two characters showing up in the same comic) across the history of Marvel Comics. A subset of this visualization - just the Top 100 characters - can be viewed above.</p>
+      </div>
+      <iframe src="https://jeffreylancaster.github.io/marvel/matrix/"></iframe>
+      <p class="caption">
+        Scroll down right and hover. Based on Mike Bostock's <a href="https://bost.ocks.org/mike/miserables/" target="_blank"><i>Les Mis&eacute;rables</i> co-occurrence matrix diagram</a>. <a href="https://jeffreylancaster.github.io/marvel/matrix/" target="_blank">View in a new tab.</a>
+      </p>
+
+    </div>
+
+    <div class="wrapper">
+      <h2>Notes</h2>
+      <p>The <a href="https://github.com/jeffreylancaster/marvel/" target="_blank">GitHub repository for this project</a> has the data files used to make these visualizations. Code for each is also on <a href="https://github.com/jeffreylancaster/marvel/" target="_blank">GitHub</a>, and a <a href="https://medium.com/@jeffrey.lancaster/the-ultimate-game-of-thrones-dataset-a100c0cf35fb" target="_blank">description of the project</a> is on Medium. Comments and suggestions are welcome on GitHub, Medium, or <a href="mailto:jeffrey@jeffreylancaster.com">here</a>.</p>
+
+      <p class="caption">h/t to <a href="https://www.jasondavies.com/maps/" target="_blank">Jason Davies</a> for the clean style of this page.</p>
+    </div>
+  </body>
 </html>
