@@ -7,10 +7,11 @@
 body{
   font-family: "Helvetica Neue";
   font-family: Georgia, serif;
-  /*overflow: hidden;*/
   margin: 0;
-  text-align: center;
   background: #fff;
+}
+.main{
+  text-align: center;
 }
 .breadcrumbs {
   font-size: small;
@@ -33,17 +34,51 @@ body{
 
 .logo {
   width: calc(100% - 2em);
-  max-width: calc(400px - 2em);
+  max-width: calc(500px - 2em);
   margin: 1em auto;
   padding: 1em;
 }
 
 iframe{
-  width: calc(100% - 2em);
-  max-width: calc(800px - 2em);
+  border: none;
+  overflow: hidden;
+}
+.image{
   margin: 0 auto;
-  height: 500px;
   border: 1px solid #EEE;
+  background-position: top left;
+  background-repeat: no-repeat;
+  width: calc(100% - 2em);
+  -webkit-overflow-scrolling: touch;
+  overflow-y: scroll;
+}
+.wide-11{
+  max-width: calc(1100px);
+}
+.wide-10{
+  max-width: calc(1000px);
+}
+.wide-9{
+  max-width: calc(900px);
+}
+.wide-8{
+  max-width: calc(800px);
+}
+.wide-7{
+  max-width: calc(700px);
+}
+.wide-6{
+  max-width: calc(600px);
+}
+
+.short{
+  height: 25vh;
+}
+.medium{
+  height: 50vh;
+}
+.tall{
+  height: 75vh;
 }
 
 
@@ -71,6 +106,10 @@ h1 {
 
 canvas {
   cursor: move;
+}
+
+select{
+  margin-left: 20px;
 }
 
 .wrapper {
@@ -165,11 +204,35 @@ blockquote {
 .treemap rect {
   fill: none;
 }
+#treemap{
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  margin: auto;
+  position: relative;
+}
+.treemap .node {
+  border: solid 1px white;
+  font: 10px sans-serif;
+  line-height: 12px;
+  overflow: hidden;
+  position: absolute;
+  text-align: center;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  justify-content:center;
+  align-content:center;
+  flex-direction:column;
+}
 
 /* force-directed */
 .links line {
   stroke: #999;
   stroke-opacity: 0.6;
+}
+.links path {
+  stroke: #999;
+  stroke-opacity: 0.6;
+  fill: none;
 }
 .nodes circle {
   stroke: #fff;
@@ -178,6 +241,10 @@ blockquote {
 .force text {
   font-family: sans-serif;
   font-size: 10px;
+}
+.selected {
+  stroke-width: 10px;
+  stroke: #00F!important;
 }
 
 /* force-directed circle */
@@ -194,15 +261,50 @@ blockquote {
 .node circle {
 }
 
-.mobile{
-  display: none;
+/* geographic map */
+#geoMap {
+  width: 600px;
+  margin: 0 auto;
 }
 
-@media(max-width: 760px){
-  .desktop{
-    display: none;
-  }
-  .mobile{
-    display: block;
-  }
+.foreground {
+  fill: none;
+  stroke: #000;
+  stroke-width: 1px;
+  pointer-events: all;
+  cursor: -webkit-grab;
+  cursor: -moz-grab;
+}
+
+.foreground.zooming {
+  cursor: -webkit-grabbing;
+  cursor: -moz-grabbing;
+}
+
+.graticule {
+  fill: none;
+  stroke: #636B62;
+  stroke-width: .5px;
+  stroke-dasharray: 2,2;
+}
+
+.land {
+  fill: #69D2E7;
+  stroke: none;
+}
+
+.mesh {
+  stroke: #50576A;
+  stroke-width: .5px;
+  fill: none;
+}
+
+.point {
+  fill: #f00;
+}
+
+
+
+.hidden{
+  display: none;
 }

@@ -6,60 +6,56 @@
     <meta name="keywords" content="Marvel, X-Men, Wolverine, Iron Man, Captain America, Cyclops, Spider-Man, Storm, Thor, Beast, Avengers, Colossus, Human Torch, Thing, Rogue, Nightcrawler, Hulk, Iceman, Invisible Woman, Archangel, Fantastic Four, Mr. Fantastic, Scarlet Witch, Gambit, Vision, Professor Xavier, Psylocke, Wasp, Hawkeye, Magneto, Quicksilver, Havok, Bishop, Black Panther, Cannonball, Black Widow, Sub-Mariner, She-Hulk, Daredevil, Doctor Strange, Emma Frost, Jean Grey">
     <meta name="author" content="Jeffrey Lancaster">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/7.0.0/normalize.min.css" />
     <meta property="og:title" content="Marvel Comics">
     <meta property="og:description" content="Marvel Comics, data visualization">
     <title>Marvel</title>
     <link href="style.css" rel="stylesheet">
   </head>
-  <body>
+  <body class="main">
     <p class="breadcrumbs">
       <a href="https://jeffreylancaster.github.io/">jeffreylancaster.github.io</a> → Marvel
     </p>
 
     <img src="img/marvel-logo-2.png" class="logo">
 
-    <div class="mobile">
-      <a href="https://jeffreylancaster.github.io/marvel/m/">On a mobile device? Click here.</a>
+    <div class="wrapper">
+      <p>This work using Marvel's Developer API began after similar work on HBO's <a href="https://jeffreylancaster.github.io/game-of-thrones/"><i>Game of Thrones</i></a>, Netflix's <a href="https://jeffreylancaster.github.io/stranger-things/"><i>Stranger Things</i></a>, and Amazon's <a href="https://jeffreylancaster.github.io/man-in-the-high-castle/"><i>The Man in the High Castle</i></a>. I was curious whether I could use Marvel's API to prove that Deadpool isn't part of the Marvel Cinematic Universe.</p>
+      <p>This is a playground for that idea and others. Note: the page may take a moment to load since it's loading each visualization.</p>
     </div>
 
-    <div class="desktop">
+    <h2>Is Deadpool part of the MCU?</h2>
+    <div class="wrapper">
+      <p>No. No he is not.</p>
 
-      <div class="wrapper">
-        <p>This work using Marvel's Developer API began after similar work on HBO's <a href="https://jeffreylancaster.github.io/game-of-thrones/"><i>Game of Thrones</i></a>, Netflix's <a href="https://jeffreylancaster.github.io/stranger-things/"><i>Stranger Things</i></a>, and Amazon's <a href="https://jeffreylancaster.github.io/man-in-the-high-castle/"><i>The Man in the High Castle</i></a>. I was curious whether I could use Marvel's API to prove that Deadpool isn't part of the Marvel Cinematic Universe.</p>
-        <p>This is a playground for that idea and others. Note: the page may take a moment to load since it's loading each visualization.</p>
-      </div>
+      <p>This matrix shows film character co-occurrences (two characters showing up in the same film) clustered by their main series to distinguish the Marvel Cinematic Universe (Avengers, et al - upper left macro-cluster), the Earth-10005 Universe (X-Men - middle macro-cluster), and the Marvel TV Series on Netflix (The Defenders - bottom right macro-cluster). Tying them all together: Stan Lee is the only overlap between the MCU and Earth-10005!</p>
 
-      <h2>Is Deadpool part of the MCU?</h2>
-      <div class="wrapper">
-        <p>No. No he is not.</p>
+      <p>Marvel MCU and Neflix data from <a href="https://blog.bramp.net/post/2018/04/08/the-mcu/" target="_blank">blog.bramp.net</a> and additional data based on <a href="http://marvel.wikia.com/wiki/Earth-10005" target="_blank">marvel.wikia.com</a>.</p>
+    </div>
+    <div class="image wide-11 tall" data-src="https://jeffreylancaster.github.io/marvel/matrix-universes/" style="background-image: url('matrix-universes/marvel-matrix-universes.png');">
+    </div>
+    <p class="caption">
+      <span class="hidden">Scroll down and right and hover. </span>Based on Mike Bostock's <a href="https://bost.ocks.org/mike/miserables/" target="_blank"><i>Les Mis&eacute;rables</i> co-occurrence matrix diagram</a>.
+      <a href="https://jeffreylancaster.github.io/marvel/matrix-universes/" target="_blank">View in a new tab</a><span> or click to view live version</span>.
+    </p>
 
-        <p>This matrix shows film character co-occurrences (two characters showing up in the same film) clustered by their main series to distinguish the Marvel Cinematic Universe (Avengers, et al - upper left macro-cluster), the Earth-10005 Universe (X-Men - middle macro-cluster), and the Marvel TV Series on Netflix (The Defenders - bottom right macro-cluster). Tying them all together: Stan Lee is the only overlap between the MCU and Earth-10005!</p>
+    <h2>Which top characters are in comics together?</h2>
+    <div class="wrapper">
+      <p>This matrix looks at comic book character co-occurrences (two characters showing up in the same comic) across the history of Marvel Comics. This visualization is just the Top 100 characters based on overall appearances.</p>
+      <p><i>Note: I've intentionally not shared the cached data pulled from Marvel Developer, only the directed graph data to build this visualization.</i></p>
+    </div>
+    <div class="image wide-11 tall" data-src="https://jeffreylancaster.github.io/marvel/matrix-100/" style="background-image: url('matrix-100/marvel-matrix-100.png');">
+    </div>
+    <p class="caption">
+      <span class="hidden">Scroll down and right and hover. </span>Based on Mike Bostock's <a href="https://bost.ocks.org/mike/miserables/" target="_blank"><i>Les Mis&eacute;rables</i> co-occurrence matrix diagram</a>.
+      <a href="https://jeffreylancaster.github.io/marvel/matrix-100/" target="_blank">View in a new tab</a><span> or click to view live version</span>.
+    </p>
 
-        <p>Marvel MCU and Neflix data from <a href="https://blog.bramp.net/post/2018/04/08/the-mcu/" target="_blank">blog.bramp.net</a> and additional data based on <a href="http://marvel.wikia.com/wiki/Earth-10005" target="_blank">marvel.wikia.com</a>.</p>
-      </div>
-      <iframe src="https://jeffreylancaster.github.io/marvel/matrix-universes/"></iframe>
-      <p class="caption">
-        Scroll down and right and hover. Based on Mike Bostock's <a href="https://bost.ocks.org/mike/miserables/" target="_blank"><i>Les Mis&eacute;rables</i> co-occurrence matrix diagram</a>. <a href="https://jeffreylancaster.github.io/marvel/matrix-universes/" target="_blank">View in a new tab.</a>
-      </p>
-
-      <h2>Which top characters are in comics together?</h2>
-      <div class="wrapper">
-        <p>This matrix looks at comic book character co-occurrences (two characters showing up in the same comic) across the history of Marvel Comics. This visualization is just the Top 100 characters based on overall appearances.</p>
-        <p><i>Note: I've intentionally not shared the cached data pulled from Marvel Developer, only the directed graph data to build this visualization.</i></p>
-      </div>
-      <iframe src="https://jeffreylancaster.github.io/marvel/matrix-100/"></iframe>
-      <p class="caption">
-        Scroll down right and hover. Based on Mike Bostock's <a href="https://bost.ocks.org/mike/miserables/" target="_blank"><i>Les Mis&eacute;rables</i> co-occurrence matrix diagram</a>. <a href="https://jeffreylancaster.github.io/marvel/matrix-100/" target="_blank">View in a new tab.</a>
-      </p>
-
-      <h2>Of all characters, which are in comics together?</h2>
-      <div class="wrapper">
-        <p>Looking at (1491<sup>2</sup>-1491)/2 = 1,110,795 comic book character co-occurrences (two characters showing up in the same comic) across the history of Marvel Comics. A subset of this visualization - just the Top 100 characters - can be viewed above.</p>
-        <p>Data provided by <a href="http://marvel.com">Marvel © 2018</a> via <a href="https://developer.marvel.com" target="_blank">Marvel Developer</a>.</p>
-        <p>Please be patient while this one loads... It might take a minute or two: <a href="https://jeffreylancaster.github.io/marvel/matrix/" target="_blank">view in a new tab.</a></p>
-        <p><i>Note: I've intentionally not shared the cached data pulled from Marvel Developer, only the directed graph data to build this visualization.</i></p>
-      </div>
+    <h2>Of all characters, which are in comics together?</h2>
+    <div class="wrapper">
+      <p>Looking at (1491<sup>2</sup>-1491)/2 = 1,110,795 comic book character co-occurrences (two characters showing up in the same comic) across the history of Marvel Comics. A subset of this visualization - just the Top 100 characters - can be viewed above.</p>
+      <p>Data provided by <a href="http://marvel.com">Marvel © 2018</a> via <a href="https://developer.marvel.com" target="_blank">Marvel Developer</a>.</p>
+      <p>Please be patient while this one loads... It might take a minute or two: <a href="https://jeffreylancaster.github.io/marvel/matrix/" target="_blank">view in a new tab.</a></p>
+      <p><i>Note: I've intentionally not shared the cached data pulled from Marvel Developer, only the directed graph data to build this visualization.</i></p>
     </div>
 
     <div class="wrapper">
@@ -68,5 +64,18 @@
 
       <p class="caption">h/t to <a href="https://www.jasondavies.com/maps/" target="_blank">Jason Davies</a> for the clean style of this page.</p>
     </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script>
+    // to replace the background image with the live visualization
+    $(".image").click(function(){
+      var src = $(this).attr("data-src"),
+        width = $(this).width(),
+        height = $(this).height();
+      $(this).css("background-image", "none");
+      $(this).html('<iframe src="'+src+'" width="100%" height="'+height+'">');
+      $(this).next().find('span').removeClass('hidden');
+      $(this).next().find('span').eq(1).addClass('hidden');
+    })
+    </script>
   </body>
 </html>

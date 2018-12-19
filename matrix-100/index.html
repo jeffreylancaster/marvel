@@ -80,7 +80,7 @@ function ready(error, data) {
     var svg = d3.select("svg")
         .attr("width", width + margin.left + margin.right)
         .attr("height", height + margin.top + margin.bottom)
-        .style("margin-left", -margin.left + "px")
+        .style("margin-left", -300 + "px")
       .append("g")
         .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
@@ -218,7 +218,7 @@ function ready(error, data) {
 
     var timeout = setTimeout(function() {
       order("count");
-      d3.select("#order").property("selectedIndex", 1).node().focus();
+      d3.select("#order").property("selectedIndex", 1);
       }, 5000);
 };
 
