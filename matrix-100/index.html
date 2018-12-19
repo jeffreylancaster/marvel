@@ -8,30 +8,22 @@
     <meta name="keywords" content="Marvel, X-Men, Wolverine, Iron Man, Captain America, Cyclops, Spider-Man, Storm, Thor, Beast, Avengers, Colossus, Human Torch, Thing, Rogue, Nightcrawler, Hulk, Iceman, Invisible Woman, Archangel, Fantastic Four, Mr. Fantastic, Scarlet Witch, Gambit, Vision, Professor Xavier, Psylocke, Wasp, Hawkeye, Magneto, Quicksilver, Havok, Bishop, Black Panther, Cannonball, Black Widow, Sub-Mariner, She-Hulk, Daredevil, Doctor Strange, Emma Frost, Jean Grey">
     <meta name="author" content="Jeffrey Lancaster">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/7.0.0/normalize.min.css" />
     <link rel="stylesheet" href="../style.css" />
     <script src="//d3js.org/d3.v2.min.js" charset="utf-8"></script>
+    <script src="//d3js.org/d3.v4.min.js" charset="utf-8"></script>
   </head>
   <body>
-    <!--
-      <h2>Playing with the Marvel API.</h2>
 
-      <p>Looking at comic book character co-occurrences (two characters showing up in the same comic) across the history of Marvel Comics. This visualization is just the Top 100 characters based on overall appearances, a subset of the full dataset which can be viewed <a href="../matrix/">here</a>. Please be patient if you load that one - it's a lot of co-occurrences.</p>
-
-      <p>Code for this chart is on <a href="https://github.com/jeffreylancaster/marvel" target="_blank">github</a>, and a description of the impetus to this project is on <a href="https://medium.com/@jeffrey.lancaster/the-ultimate-game-of-thrones-dataset-a100c0cf35fb" target="_blank">Medium</a>. This visualization is based on Mike Bostock's <a href="https://bost.ocks.org/mike/miserables/" target="_blank"><i>Les Mis&eacute;rables</i> co-occurrence matrix diagram</a>. <a href="http://marvel.com" target="_blank">Data provided by Marvel © 2018 MARVEL</a> via <a href="https://developer.marvel.com" target="_blank">Marvel Developer</a>.</p>
-
-      <p>Comments and suggestions are welcome on github, Medium, or <a href="mailto: jeffrey@jeffreylancaster.com" target="_blank">here</a>. <i>Note: I've intentionally not shared the cached data pulled from Marvel Developer, only the directed graph data to build this visualization.</i></p>
-    -->
-
-      <p>Order: <select id="order">
-        <option value="name">by Name</option>
-        <option value="count">by Frequency</option>
-        <!-- <option value="group">by Cluster</option> -->
-      </select></p>
+    <p>
+      <select id="order">
+        <option value="name">Order by Name</option>
+        <option value="count">Order by Frequency</option>
+        <!-- <option value="group">Order by Cluster</option> -->
+      </select>
+    </p>
     
     <svg class="matrix"></svg>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
     <script>
 /* HELPFUL FUNCTIONS */
 
@@ -56,42 +48,45 @@ function onlyUnique(value, index, self) {
   return self.indexOf(value) === index;
 }
 
+var config = {
+  "title":"Top 100 Comic Character Co-Occurrence",
+  "size": 1000,
+  "file": "matrixObject-100.json",
+  "margin": {
+    "top": 200,
+    "right": 50,
+    "bottom": 60,
+    "left": 350
+  }
+}
 
-/* IMPORT DATA */
-$.when(
-  $.getJSON("../data/config.json", function(data) {
-    config = data.config;
-    console.log("config.json loaded");
-  })
-  .fail(function() {console.error("config.json not loaded");})
+d3.queue()
+  .defer(d3.json, '../data/'+config.file)
+  .await(ready);
 
-
-/* DO STUFF WITH THE DATA */
-
-).then(function() {
+function ready(error, data) {
+  if (error) throw error;
   console.log("now that the files are loaded... do magic.");
 
-    var file, width, height;
-    
-    width = config.matrix100.all.size;
-    height = config.matrix100.all.size;
-    file = config.matrix100.all.file;
+    var dataMatrix = data,
+      margin = config.margin,
+      width = config.size,
+      height = config.size;
 
     var x = d3.scale.ordinal().rangeBands([0, width]),
       z = d3.scale.linear().domain([0, 100]).clamp(true),
       c = d3.scale.category20c().domain(d3.range(20));
 
     var svg = d3.select("svg")
-        .attr("width", width + config.matrix100.margin.left + config.matrix100.margin.right)
-        .attr("height", height + config.matrix100.margin.top + config.matrix100.margin.bottom)
-        .style("margin-left", -config.matrix100.margin.left + "px")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+        .style("margin-left", -margin.left + "px")
       .append("g")
-        .attr("transform", "translate(" + config.matrix100.margin.left + "," + config.matrix100.margin.top + ")");
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-    d3.json("../data/"+file, function(dataMatrix) {
-      var matrix = [],
-        nodes = dataMatrix.comics.nodes,
-        n = nodes.length;
+    var matrix = [],
+      nodes = dataMatrix.comics.nodes,
+      n = nodes.length;
 
     //console.log(dataMatrix);
 
@@ -225,9 +220,7 @@ $.when(
       order("count");
       d3.select("#order").property("selectedIndex", 1).node().focus();
       }, 5000);
-    });
-
-});
+};
 
     </script>
   </body>
