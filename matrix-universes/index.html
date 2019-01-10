@@ -9,7 +9,6 @@
     <meta name="author" content="Jeffrey Lancaster">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="../style.css" />
-    <script src="//d3js.org/d3.v2.min.js" charset="utf-8"></script>
     <script src="//d3js.org/d3.v4.min.js" charset="utf-8"></script>
   </head>
   <body>
@@ -56,13 +55,8 @@ function compare(a,b) {
 }
 
 var mcuFilm, mcuTV, xmenFilm;
-var matrixObject = { // object for nodes & links
-  "nodes": [],
-  "links": []
-}
-var characterMatrix = [[]];
-var uniqueCharacters = {};
-var groupArray = [
+var characters = {};
+var groups = [
   "Ant-Man",
   "Iron Man",
   "Thor",
@@ -108,102 +102,71 @@ function ready(error, mcufilm, mcunetflix, xmenfilm) {
   /* DIGEST FILES TO MAKE CHARACTER MATRIX */
   var films = [...mcufilm.films, ...mcunetflix.films, ...xmenfilm.films];
   
-  // make uniqueCharacters, make groupArray
+  // make characters, make groups
   films.forEach(function(val, i){
     val.characters.forEach(function(value, j){
-      if(!uniqueCharacters[value]){
-        uniqueCharacters[value.name] = value;
+      if(!characters.hasOwnProperty(value.name)){
+        characters[value.name] = value;
       }
-      //groupArray.push(value.mainseries);
     });
   });
-
-
-  // deduplicate the groupArray
-  //groupArray = groupArray.filter(onlyUnique).sort();
-  //console.log(groupArray);
-
-  var uniqueCharactersArray = [];
-  for(var i in uniqueCharacters){
+  
+  // make characters into an array
+  var charactersArray = Object.values(characters).map(function(val, ind){
     // assign a group to each character...
-    uniqueCharacters[i].group = groupArray.indexOf(uniqueCharacters[i].mainseries);
-    // ... and make uniqueCharacters into an array
-    uniqueCharactersArray.push(uniqueCharacters[i].name);
-  };
-  uniqueCharactersArray.sort();
+    characters[val.name].group = groups.indexOf(characters[val.name].mainseries);
+    characters[val.name].films = {};
+    characters[val.name].series = {};
+    characters[val.name].count = 0;
+    // ... and make the array ...
+    return val.name
+  })
+    .sort();
 
   // count the number of films & series for each character
-  for(var i in films){
-    if(films[i].characters.length > 1){
-      films[i].characters.forEach(function(item, j){
-        if(!uniqueCharacters[item.name].films){
-          uniqueCharacters[item.name].films = {}
-        }
-        if(!uniqueCharacters[item.name].series){
-          uniqueCharacters[item.name].series = {}
-        }
-        uniqueCharacters[item.name].films[films[i].name] = true;
-        uniqueCharacters[item.name].series[films[i].series] = true;
-      });
-    }
+  films.forEach(function(val, ind){
+    val.characters.forEach(function(v, i){
+      characters[v.name].films[val.name] = true;
+      characters[v.name].series[val.series] = true;
+    })
+  })
+  for(var i in characters){
+    characters[i].films = Object.keys(characters[i].films).length;
+    characters[i].series = Object.keys(characters[i].series).length;
   }
-  for(var i in uniqueCharacters){
-    if(uniqueCharacters[i].films){
-      uniqueCharacters[i].films = Object.keys(uniqueCharacters[i].films).length;
-    }
-    if(uniqueCharacters[i].series){
-      uniqueCharacters[i].series = Object.keys(uniqueCharacters[i].series).length;
-    }
-  }    
 
   // create the co-occurrence matrix for all characters
-  for(i=0; i<uniqueCharactersArray.length; i++){
-    characterMatrix[i] = [];
-    for(j=0; j<uniqueCharactersArray.length; j++){
-      characterMatrix[i][j] = 0;
-    }
-  }
-
-  for(var i in films){
-    if(films[i].characters.length > 1){
-      films[i].characters.forEach(function(item, j){
-        films[i].characters.forEach(function(val, k){
-          if(uniqueCharactersArray.includes(item.name) && uniqueCharactersArray.includes(val.name)){
-            characterMatrix[uniqueCharactersArray.indexOf(item.name)][uniqueCharactersArray.indexOf(val.name)]++;
-          }
-        });
-      });
-    }
-  }
-
-  //console.log(characterMatrix);
-
-  for(i=0; i < characterMatrix.length; i++){
-    for(j=0; j < i; j++){
-      if(characterMatrix[i][j] != 0){
-        matrixObject.links.push({"source": i, "target": j, "value": characterMatrix[i][j]});
-      }
-    }
-  }
-
-  for(i=0; i<uniqueCharactersArray.length; i++){
-    matrixObject.nodes[i] = {
-      "name": uniqueCharactersArray[i],
-      "group": uniqueCharacters[uniqueCharactersArray[i]].group,
-      "count": uniqueCharacters[uniqueCharactersArray[i]].films
-    };
-  }
+  // Compute index per node.
+  var matrixArr = [];
+  charactersArray.forEach(function(node, i) {
+    matrixArr[i] = d3.range(charactersArray.length).map(function(j) { return {x: j, y: i, z: 0}; });
+  });
   
-  console.log(matrixObject);
+  // go through scenes and characters and add values to matrixArr
+  films.forEach(function(val, ind){
+    val.characters.forEach(function(v, i){
+      var a = charactersArray.findIndex(function(value){
+        return v.name == value;
+      })
+      characters[v.name].count++;
+      val.characters.forEach(function(w, j){
+        var b = charactersArray.findIndex(function(value){
+          return w.name == value;
+        })
+        matrixArr[a][b].z++;
+      })
+    })
+  })
 
+  // build the visualization
   var margin = config.margin,
     width = config.size,
     height = config.size;
 
-  var x = d3.scale.ordinal().rangeBands([0, width]),
-    z = d3.scale.linear().domain([0, 20]).clamp(true),
-    //c = d3.scale.category20().domain(d3.range(20));
-    c = d3.scale.category10().domain(d3.range(10));
+  var x = d3.scaleBand().range([0, width]),
+    z = d3.scaleLinear().domain([0, 20]).clamp(true),
+    c = d3.scaleOrdinal(d3.schemeCategory20);
+
   var svg = d3.select("svg")
       .attr("width", width + margin.left + margin.right)
       .attr("height", height + margin.top + margin.bottom)
@@ -211,34 +174,8 @@ function ready(error, mcufilm, mcunetflix, xmenfilm) {
     .append("g")
       .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-  var matrix = [],
-    nodes = matrixObject.nodes,
+  var nodes = Object.values(characters).sort((a,b) => (a.name > b.name) ? 1 : ((b.name > a.name) ? -1 : 0)),
     n = nodes.length;
-
-  // Compute index per node.
-  nodes.forEach(function(node, i) {
-    node.index = i;
-    //node.count = 0;
-    matrix[i] = d3.range(n).map(function(j) { return {x: j, y: i, z: 0}; });
-  });
-
-  // Convert links to matrix; count character occurrences.
-
-  // matrixObject.links.forEach(function(link) {
-  //   matrix[link.source][link.target].z += link.value;
-  //   matrix[link.target][link.source].z += link.value;
-  //   matrix[link.source][link.source].z += link.value;
-  //   matrix[link.target][link.target].z += link.value;
-  //   nodes[link.source].count += link.value;
-  //   nodes[link.target].count += link.value;
-  // });
-  // console.log(matrix);
-  
-  characterMatrix.forEach(function(val, i){
-    characterMatrix[i].forEach(function(item, j){
-      matrix[i][j].z = characterMatrix[i][j];
-    })
-  })
 
   // Precompute the orders.
   var orders = {
@@ -256,7 +193,7 @@ function ready(error, mcufilm, mcunetflix, xmenfilm) {
       .attr("height", height);
 
   var row = svg.selectAll(".row")
-      .data(matrix)
+      .data(matrixArr)
     .enter().append("g")
       .attr("class", "row")
       .attr("transform", function(d, i) { return "translate(0," + x(i) + ")"; })
@@ -267,13 +204,13 @@ function ready(error, mcufilm, mcunetflix, xmenfilm) {
 
   row.append("text")
       .attr("x", -6)
-      .attr("y", x.rangeBand() / 2)
+      .attr("y", x.bandwidth() / 2)
       .attr("dy", ".32em")
       .attr("text-anchor", "end")
       .text(function(d, i) { return nodes[i].name; });
 
   var column = svg.selectAll(".column")
-    .data(matrix)
+    .data(matrixArr)
     .enter().append("g")
       .attr("class", "column")
       .attr("transform", function(d, i) { return "translate(" + x(i) + ")rotate(-90)"; });
@@ -283,7 +220,7 @@ function ready(error, mcufilm, mcunetflix, xmenfilm) {
 
   column.append("text")
       .attr("x", 6)
-      .attr("y", x.rangeBand() / 2)
+      .attr("y", x.bandwidth() / 2)
       .attr("dy", ".32em")
       .attr("text-anchor", "start")
       .text(function(d, i) { return nodes[i].name; });
@@ -295,8 +232,8 @@ function ready(error, mcufilm, mcunetflix, xmenfilm) {
       .append("rect")
         .attr("class", "cell")
         .attr("x", function(d) { return x(d.x); })
-        .attr("width", x.rangeBand())
-        .attr("height", x.rangeBand())
+        .attr("width", x.bandwidth())
+        .attr("height", x.bandwidth())
         .style("fill-opacity", function(d) { return z(d.z)/0.24; })
         .style("fill", function(d) { return nodes[d.x].group == nodes[d.y].group ? c(nodes[d.x].group) : "#666666"; })
         .on("mouseover", mouseover)

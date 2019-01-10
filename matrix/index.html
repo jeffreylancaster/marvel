@@ -9,7 +9,11 @@
     <meta name="author" content="Jeffrey Lancaster">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="../style.css" />
-    <script src="//d3js.org/d3.v2.min.js" charset="utf-8"></script>
+    <style>
+      .matrix text{
+        font-size: 0.5em;
+      }
+    </style>
     <script src="//d3js.org/d3.v4.min.js" charset="utf-8"></script>
   </head>
   <body>
@@ -51,7 +55,7 @@ function onlyUnique(value, index, self) {
 var config = {
   "title":"Top 100 Comic Character Co-Occurrence",
   "size": 10000,
-  "file": "matrixObject.json",
+  "dataset": "comics", // "comics", "series", "stories"
   "margin": {
     "top": 200,
     "right": 50,
@@ -61,31 +65,37 @@ var config = {
 }
 
 d3.queue()
-  .defer(d3.json, '../data/'+config.file)
+  .defer(d3.json, '../data/matrixObject-min.json')
   .await(ready);
 
-function ready(error, data) {
+function ready(error, d) {
   if (error) throw error;
   console.log("now that the files are loaded... do magic.");
 
-    var dataMatrix = data,
-      margin = config.margin,
+    /* TEST */
+    // var links = d[`${config.dataset}Matrix`].links.map(function(val, ind){
+    //   return [val.source, val.target, val.value];
+    // })
+    // console.log(JSON.stringify(links));
+    /* end TEST */
+
+    var margin = config.margin,
       width = config.size,
       height = config.size;
 
-    var x = d3.scale.ordinal().rangeBands([0, width]),
-      z = d3.scale.linear().domain([0, 100]).clamp(true),
-      c = d3.scale.category20c().domain(d3.range(20));
-
+    var x = d3.scaleBand().range([0, width]),
+      z = d3.scaleLinear().domain([0, 100]).clamp(true),
+      c = d3.scaleOrdinal(d3.schemeCategory20c)
     var svg = d3.select("svg")
         .attr("width", width + margin.left + margin.right)
         .attr("height", height + margin.top + margin.bottom)
-        .style("margin-left", -margin.left + "px")
+        .style("margin-left", -300 + "px")
       .append("g")
-        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+        .attr("transform", `translate(${margin.left},${margin.top})`);
 
     var matrix = [],
-      nodes = dataMatrix.comicsMatrix.nodes,
+      nodes = d[config.dataset].nodes,
+      links = d[config.dataset].links,
       n = nodes.length;
 
     // Compute index per node.
@@ -102,13 +112,9 @@ function ready(error, data) {
     });
 
     // Convert links to matrix; count character occurrences.
-    dataMatrix.comicsMatrix.links.forEach(function(link) {
-      matrix[link.source][link.target].z += link.value;
-      matrix[link.target][link.source].z += link.value;
-      // matrix[link.source][link.source].z += link.value;
-      // matrix[link.target][link.target].z += link.value;
-      // nodes[link.source].count += link.value;
-      // nodes[link.target].count += link.value;
+    links.forEach(function(link) {
+      matrix[link[0]][link[1]].z += link[2];
+      matrix[link[1]][link[0]].z += link[2];
     });
 
     // Precompute the orders.
@@ -129,7 +135,7 @@ function ready(error, data) {
         .data(matrix)
       .enter().append("g")
         .attr("class", "row")
-        .attr("transform", function(d, i) { return "translate(0," + x(i) + ")"; })
+        .attr("transform", function(d, i) { return `translate(0,${x(i)})`; })
         .each(row);
 
     row.append("line")
@@ -137,7 +143,7 @@ function ready(error, data) {
 
     row.append("text")
         .attr("x", -6)
-        .attr("y", x.rangeBand() / 2)
+        .attr("y", x.bandwidth() / 2)
         .attr("dy", ".32em")
         .attr("text-anchor", "end")
         .text(function(d, i) { return nodes[i].name; });
@@ -146,14 +152,14 @@ function ready(error, data) {
       .data(matrix)
       .enter().append("g")
         .attr("class", "column")
-        .attr("transform", function(d, i) { return "translate(" + x(i) + ")rotate(-90)"; });
+        .attr("transform", function(d, i) { return `translate(${x(i)})rotate(-90)`});
 
     column.append("line")
         .attr("x1", -width);
 
     column.append("text")
         .attr("x", 6)
-        .attr("y", x.rangeBand() / 2)
+        .attr("y", x.bandwidth() / 2)
         .attr("dy", ".32em")
         .attr("text-anchor", "start")
         .text(function(d, i) { return nodes[i].name; });
@@ -165,8 +171,8 @@ function ready(error, data) {
         .append("rect")
           .attr("class", "cell")
           .attr("x", function(d) { return x(d.x); })
-          .attr("width", x.rangeBand())
-          .attr("height", x.rangeBand())
+          .attr("width", x.bandwidth())
+          .attr("height", x.bandwidth())
           .style("fill-opacity", function(d) { return z(d.z); })
           .style("fill", function(d) { return nodes[d.x].group == nodes[d.y].group ? c(nodes[d.x].group) : null; })
           .on("mouseover", mouseover)
@@ -174,11 +180,11 @@ function ready(error, data) {
         .append("title")
           .text(function(d, i) {
             if(d.x == d.y){
-              return nodes[d.x].name + " in " + d.z + " comics with other characters."
+              return `${nodes[d.x].name} in ${d.z} ${config.dataset} with other characters.`
             } else {
-              return nodes[d.x].name + " and " + nodes[d.y].name + " together in " + d.z + " comics.";
+              return `${nodes[d.x].name} and ${nodes[d.y].name} together in ${d.z} ${config.dataset}.`;
             }
-          });
+          });  
     }
 
     function mouseover(p) {
@@ -191,7 +197,7 @@ function ready(error, data) {
     }
 
     d3.select("#order").on("change", function() {
-      //clearTimeout(timeout);
+      // clearTimeout(timeout);
       order(this.value);
     });
 
