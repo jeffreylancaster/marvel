@@ -12,11 +12,16 @@
     <script src="//d3js.org/d3.v4.min.js" charset="utf-8"></script>
   </head>
   <body>
+    <p style="margin-left: 15px;" id="dataset">
+      <input type="radio" name="data" value="comics" checked> <label>Comics</label>
+      <input type="radio" name="data" value="series"> <label>Series</label>
+      <input type="radio" name="data" value="stories"> <label>Stories</label>
+    </p>
 
     <p>
       <select id="order">
         <option value="name">Order by Name</option>
-        <option value="count">Order by Frequency</option>
+        <option value="count" selected>Order by Frequency</option>
         <!-- <option value="group">Order by Cluster</option> -->
       </select>
     </p>
@@ -67,12 +72,14 @@ function ready(error, d) {
   if (error) throw error;
   console.log("now that the files are loaded... do magic.");
 
-    /* TEST */
-    // var links = d[config.dataset].links.map(function(val, ind){
-    //   return [val.source, val.target, val.value];
-    // })
-    // console.log(JSON.stringify(links));
-    /* end TEST */
+  /* TEST */
+  // var links = d[config.dataset].links.map(function(val, ind){
+  //   return [val.source, val.target, val.value];
+  // })
+  // console.log(JSON.stringify(links));
+  /* end TEST */
+
+  function updateData(set){
 
     var margin = config.margin,
       width = config.size,
@@ -89,8 +96,8 @@ function ready(error, d) {
         .attr("transform", `translate(${margin.left},${margin.top})`);
 
     var matrix = [],
-      nodes = d[config.dataset].nodes,
-      links = d[config.dataset].links,
+      nodes = d[set].nodes,
+      links = d[set].links,
       n = nodes.length;
 
     // Compute index per node.
@@ -148,7 +155,7 @@ function ready(error, d) {
       .enter().append("g")
         .attr("class", "column")
         .attr("transform", function(d, i) { return `translate(${x(i)})rotate(-90)`});
-
+    
     column.append("line")
         .attr("x1", -width);
 
@@ -175,11 +182,11 @@ function ready(error, d) {
         .append("title")
           .text(function(d, i) {
             if(d.x == d.y){
-              return `${nodes[d.x].name} in ${d.z} ${config.dataset} with other characters.`
+              return `${nodes[d.x].name} in ${d.z} ${set} with other characters.`
             } else {
-              return `${nodes[d.x].name} and ${nodes[d.y].name} together in ${d.z} ${config.dataset}.`;
+              return `${nodes[d.x].name} and ${nodes[d.y].name} together in ${d.z} ${set}.`;
             }
-          });  
+          })
     }
 
     function mouseover(p) {
@@ -192,7 +199,6 @@ function ready(error, d) {
     }
 
     d3.select("#order").on("change", function() {
-      clearTimeout(timeout);
       order(this.value);
     });
 
@@ -212,11 +218,23 @@ function ready(error, d) {
         .delay(function(d, i) { return x(i) * 4; })
         .attr("transform", function(d, i) { return "translate(" + x(i) + ")rotate(-90)"; });
     }
+    // set the order by count/frequency
+    order('count');
+  }
 
-    var timeout = setTimeout(function() {
-      order("count");
-      d3.select("#order").property("selectedIndex", 1);
-      }, 5000);
+  // build the first visualization
+  updateData(config.dataset);
+
+  d3.selectAll("input").on("change", function() {
+    // remove the entire visualization - ought to be a better way
+    d3.selectAll("g").remove();
+    // set the sort order to by count/frequency
+    d3.select("#order").property("selectedIndex", 1);
+    // build a new visualization
+    updateData(this.value);
+  });
+
+
 };
 
     </script>

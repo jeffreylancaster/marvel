@@ -303,6 +303,11 @@ blockquote {
   fill: #f00;
 }
 
+label {
+  font-family: "Helvetica Neue";
+  margin-right: 10px;
+  font-size: 13px;
+}
 
 
 .hidden{
