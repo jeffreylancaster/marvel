@@ -23,6 +23,12 @@
 		}
 	</style>
 <body>
+	<p style="margin-left: 15px;" id="dataset">
+      <input type="radio" name="data" value="comics" checked> <label>Comics</label>
+      <input type="radio" name="data" value="series"> <label>Series</label>
+      <input type="radio" name="data" value="stories"> <label>Stories</label>
+    </p>
+
 	<svg></svg>
 </body>
 <script src="https://d3js.org/d3.v4.min.js" charset="utf-8"></script>
@@ -36,121 +42,134 @@ function ready(error, data) {
   if (error) throw error;
   console.log("now that the files are loaded... do magic.");
 
-  var labels = data.comics.nodes.map(function(val, ind){
-  	return val.name
-  })
+  function updateData(set){
 
-  var matrix = [];
-  	labels.forEach(function(node, i) {
-   		matrix[i] = d3.range(labels.length).map(function(j) { return 0});
-  	});
+	  var labels = data[set].nodes.map(function(val, ind){
+	  	return val.name
+	  })
 
-  data.comics.links.forEach(function(val, ind){
-  	matrix[val[0]][val[1]] = val[2];
-  	matrix[val[1]][val[0]] = val[2];
-  })
+	  var matrix = [];
+	  	labels.forEach(function(node, i) {
+	   		matrix[i] = d3.range(labels.length).map(function(j) { return 0});
+	  	});
 
-	// based on https://jsfiddle.net/kLe38tff/
+	  data[set].links.forEach(function(val, ind){
+	  	matrix[val[0]][val[1]] = val[2];
+	  	matrix[val[1]][val[0]] = val[2];
+	  })
 
-	var config = {
-		"width": 1200,
-		"height": 1200,
-		"border": 30,
-		"color": "#BBB",
-		"margin": 150
+		// based on https://jsfiddle.net/kLe38tff/
+
+		var config = {
+			"width": 1200,
+			"height": 1200,
+			"border": 30,
+			"color": "#BBB",
+			"margin": 150
+		}
+
+		var svg = d3.select("svg"),
+			width = config.width,
+			height = config.height,
+			outerRadius = Math.min(width, height) * 0.5 - config.margin,
+			innerRadius = outerRadius - config.border;
+
+		svg
+			.attr("width", width)
+			.attr("height", height)
+
+		// initialize chord diagram
+		var chord = d3.chord()
+			.padAngle(0.000)
+			.sortSubgroups(d3.descending);
+
+		// arc radii
+		var arc = d3.arc()
+			.innerRadius(innerRadius)
+			.outerRadius(outerRadius);
+
+		// ribbbons
+		var ribbon = d3.ribbon()
+			.radius(innerRadius);
+
+		var color = d3.scaleOrdinal(d3.schemeCategory20c);
+
+		var g = svg.append("g")
+			.attr("transform", `translate(${width / 2},${height / 2})`)
+			.datum(chord(matrix));
+
+		var group = g.append("g")
+			.attr("class", "groups")
+			.selectAll("g")
+				.data(function(chords) { return chords.groups; })
+				.enter().append("g")
+
+		group.append("path")
+			.style("fill", function(d) { return /*config.color*/ color(d.index); })
+			.style("stroke", function(d) { return d3.rgb(/*config.color*/ color(d.index)).darker(); })
+			.attr("d", arc)
+			.on("mouseover", fade(.1))
+			.on("mouseout", fade(1))
+
+		group.append("title")
+			.text(function(d){
+				return `${labels[d.index]}`;
+			});
+
+		// add labels to each group
+		group.append("text")
+			.attr("dy", ".35em") //width
+			.attr("class", "label")
+			.attr("transform", function(d,i) { //angle
+				d.angle = (d.startAngle + d.endAngle) / 2; //calculate the average of the start angle and the end angle
+				d.name = labels[i]; //assignment for the label
+				return `rotate(${d.angle * 180 / Math.PI}) translate(0, ${-(outerRadius + config.border/2 - 10)}) ${((d.angle < Math.PI) ? 'rotate(-90)' : 'rotate(90)')}`;
+					// + ((d.angle > Math.PI * 3 / 4 && d.angle < Math.PI * 5 / 4) ? "rotate(180)" : "");
+				}) //to spin when the angle between 135 to 225 degrees
+			.attr("text-anchor", function(d){
+				d.angle = (d.startAngle + d.endAngle) / 2;
+				return ((d.angle < Math.PI) ? "start" : "end");
+			})
+			.text(function(d) {
+				return d.name;
+			});
+
+		// draw the ribbons that go from group to group
+		var ribbons = g.append("g")
+			.attr("class", "ribbons")
+			.selectAll("path")
+			.data(function(chords) { return chords; })
+			.enter().append("path")
+				.attr("d", ribbon)
+				.style("fill", function(d) { return /*config.color*/ color(d.source.index); })
+				.style("stroke", function(d) { return d3.rgb(/*config.color*/ color(d.source.index)).darker(); });
+				
+		ribbons.append("title")
+			.text(function(d){
+				return `${labels[d.source.index]} and ${labels[d.target.index]} have been in ${d.source.value} ${set} together`;
+			});
+
+		function fade(opacity) {
+			return function(d, i) {
+				ribbons
+					.filter(function(d) {
+						return d.source.index != i && d.target.index != i;
+					})
+					.transition()
+						.style("opacity", opacity);
+			};
+		}
 	}
 
-	var svg = d3.select("svg"),
-		width = config.width,
-		height = config.height,
-		outerRadius = Math.min(width, height) * 0.5 - config.margin,
-		innerRadius = outerRadius - config.border;
+	// build the first visualization
+  updateData('comics');
 
-	svg
-		.attr("width", width)
-		.attr("height", height)
-
-	// initialize chord diagram
-	var chord = d3.chord()
-		.padAngle(0.000)
-		.sortSubgroups(d3.descending);
-
-	// arc radii
-	var arc = d3.arc()
-		.innerRadius(innerRadius)
-		.outerRadius(outerRadius);
-
-	// ribbbons
-	var ribbon = d3.ribbon()
-		.radius(innerRadius);
-
-	var color = d3.scaleOrdinal(d3.schemeCategory20c);
-
-	var g = svg.append("g")
-		.attr("transform", `translate(${width / 2},${height / 2})`)
-		.datum(chord(matrix));
-
-	var group = g.append("g")
-		.attr("class", "groups")
-		.selectAll("g")
-			.data(function(chords) { return chords.groups; })
-			.enter().append("g")
-
-	group.append("path")
-		.style("fill", function(d) { return /*config.color*/ color(d.index); })
-		.style("stroke", function(d) { return d3.rgb(/*config.color*/ color(d.index)).darker(); })
-		.attr("d", arc)
-		.on("mouseover", fade(.1))
-		.on("mouseout", fade(1))
-
-	group.append("title")
-		.text(function(d){
-			return `${labels[d.index]}`;
-		});
-
-	// add labels to each group
-	group.append("text")
-		.attr("dy", ".35em") //width
-		.attr("class", "label")
-		.attr("transform", function(d,i) { //angle
-			d.angle = (d.startAngle + d.endAngle) / 2; //calculate the average of the start angle and the end angle
-			d.name = labels[i]; //assignment for the label
-			return `rotate(${d.angle * 180 / Math.PI}) translate(0, ${-(outerRadius + config.border/2 - 10)}) ${((d.angle < Math.PI) ? 'rotate(-90)' : 'rotate(90)')}`;
-				// + ((d.angle > Math.PI * 3 / 4 && d.angle < Math.PI * 5 / 4) ? "rotate(180)" : "");
-			}) //to spin when the angle between 135 to 225 degrees
-		.attr("text-anchor", function(d){
-			d.angle = (d.startAngle + d.endAngle) / 2;
-			return ((d.angle < Math.PI) ? "start" : "end");
-		})
-		.text(function(d) {
-			return d.name;
-		});
-
-	// draw the ribbons that go from group to group
-	var ribbons = g.append("g")
-		.attr("class", "ribbons")
-		.selectAll("path")
-		.data(function(chords) { return chords; })
-		.enter().append("path")
-			.attr("d", ribbon)
-			.style("fill", function(d) { return /*config.color*/ color(d.source.index); })
-			.style("stroke", function(d) { return d3.rgb(/*config.color*/ color(d.source.index)).darker(); });
-			
-	ribbons.append("title")
-		.text(function(d){
-			return `${labels[d.source.index]} and ${labels[d.target.index]} have been in ${d.source.value} comics together`;
-		});
-
-	function fade(opacity) {
-		return function(d, i) {
-			ribbons
-				.filter(function(d) {
-					return d.source.index != i && d.target.index != i;
-				})
-				.transition()
-					.style("opacity", opacity);
-		};
-	}
+  d3.selectAll("input").on("change", function() {
+    // remove the entire visualization - ought to be a better way
+    d3.selectAll("g").remove();
+    // build a new visualization
+    updateData(this.value);
+  });
 }
 </script>
 </html>
